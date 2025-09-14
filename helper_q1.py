@@ -1,0 +1,97 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+
+# Fazer a predição
+def predicao(X,beta):
+    return X @ beta
+
+def RSS(y_teste, y_pred):
+    return np.sum((y_teste - y_pred)**2)
+
+# Gerar a matriz X e o vetor y
+def gerar_matrizes(dados):
+    X = dados[:, :-1]
+    y = dados[:, -1:]
+    return X, y
+
+# 
+def plotar_grafico_1(X, y):
+    velocidade = X
+    potencia = y
+
+    plt.scatter(velocidade, potencia,
+                c='r',
+                edgecolors='k',
+                label='Potência')
+
+    plt.xlabel("Velocidade do vento")
+    plt.ylabel("Potência gerada")
+    plt.title("Curva de Potência do Aerogerador")
+    plt.legend()
+    plt.grid(color='gray', linestyle='--', linewidth=0.2)
+    plt.xlim(velocidade.min() - 1, velocidade.max() + 1)
+    plt.ylim(potencia.min() - 30, potencia.max() + 50)
+    plt.show()
+
+# Função para plotar o gráfico de dispersão com a linha de regressão
+def plotar_modelo_regressao(X, y, beta, tipo_modelo, nome_modelo):
+   
+    # Plota os dados observados
+    plt.scatter(X, y, c='r',
+                edgecolors='k',
+                label='Potência')
+
+    # Plota a linha de previsão com base no tipo de modelo
+    if tipo_modelo == 'linear':
+        x_range = np.linspace(np.min(X), np.max(X), 200).reshape(-1, 1)
+        x_range_com_intercepto = np.c_[np.ones(x_range.shape[0]), x_range]
+        y_pred = x_range_com_intercepto @ beta
+        plt.plot(x_range, y_pred, color='blue', linewidth=2, label='Linha de Regressão')
+    
+    elif tipo_modelo == 'media':
+        plt.axhline(y=beta, color='green', linestyle='--', linewidth=2, label='Modelo da Média')
+        
+    # Adiciona títulos e legendas
+    plt.xlabel("Velocidade do vento")
+    plt.ylabel("Potência gerada")
+    plt.title("Curva de Potência do Aerogerador")
+    plt.suptitle(nome_modelo, fontsize=16)
+    plt.legend()
+    plt.grid(color='gray', linestyle='--', linewidth=0.2)
+    plt.show()
+
+#
+def imprimir_tabela_resultados(resultados_estatisticos):
+    # Defina a largura das colunas para alinhamento
+    col_width = 28
+    num_width = 15
+    line = '-' * (col_width + 4 * num_width + 5)
+    
+    # Imprime o cabeçalho da tabela
+    print(line)
+    print(f"| {'Modelos':<{col_width}} | {'Média':<{num_width}} | {'Desvio-Padrão':<{num_width}} | {'Maior Valor':<{num_width}} | {'Menor Valor':<{num_width}} |")
+    print(line)
+
+    # Imprime os resultados de cada modelo, iterando sobre o dicionário
+    for nome_modelo, stats in resultados_estatisticos.items():
+        media = stats['media']
+        desvio_padrao = stats['desvio_padrao']
+        maior_valor = stats['maior_valor']
+        menor_valor = stats['menor_valor']
+        
+        print(f"| {nome_modelo:<{col_width}} | {media:>{num_width}.2f} | {desvio_padrao:>{num_width}.2f} | {maior_valor:>{num_width}.2f} | {menor_valor:>{num_width}.2f} |")
+    
+    print(line)
+
+
+def exportar_dados_para_csv(resultados):
+    # 1. Converta o dicionário em um DataFrame.
+    df_resultados = pd.DataFrame.from_dict(resultados, orient='index')
+    df_resultados.index.name = 'Modelo'
+    df_resultados.to_csv('resultados.csv', index=True, sep=';', decimal=',')
+
+    print("Arquivo 'resultados_estatisticos.csv' criado com sucesso com as casas decimais.")
+    print("\nPrimeiras 5 linhas do DataFrame:")
+    print(df_resultados.head())
