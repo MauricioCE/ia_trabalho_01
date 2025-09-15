@@ -19,5 +19,5 @@ def grafico_dispersao_inicial(dados, classe_ids):
     plt.legend()
     plt.show()
 
-def calculate_accuracy(y_true, y_pred):
-    return np.mean(y_true == y_pred)
+def calculate_accuracy(y_teste, y_pred):
+    return np.mean(y_teste == y_pred)
