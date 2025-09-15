@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.linalg import pinv
-import pandas as pd
-from helper_q1 import plotar_grafico_1, gerar_matrizes, predicao, plotar_modelo_regressao, imprimir_tabela_resultados, RSS, exportar_dados_para_csv
+from q1_helper import predicao, plotar_grafico_1, plotar_modelo_regressao, imprimir_tabela_resultados, RSS, exportar_dados_para_csv
 
 # >>>>>>>>>>>>  DADOS  <<<<<<<<<<<<
 
@@ -12,16 +11,17 @@ dados = np.loadtxt('aerogerador.dat', delimiter='\t')
 dados_t = dados.T
 
 # Gerar a Matriz X e o vetor y
-X_sem_intercepor, y = gerar_matrizes(dados)   
+X_sem_intercepor = dados[:, :-1]
+y = dados[:, -1:]  
 
 # Plotando o gráfico de dispersão
 # plotar_grafico_1(X, y)
 
 # Pegando os tamanhos de N e y
-N,p = X_sem_intercepor.shape
+N, p = X_sem_intercepor.shape
 
 # Adicionando 1s à primera coluna de X (interceptador)
-X_com_interceptor = np.c_[np.ones(X_sem_intercepor.shape[0]), X_sem_intercepor]
+X_com_interceptor = np.c_[np.ones(N), X_sem_intercepor]
 
 # Dados para o MQO Regularizado
 valores_lambda = [0, 0.25, 0.5, 0.75, 1]
@@ -35,7 +35,6 @@ rss_mqo_regularizado_25 = []
 rss_mqo_regularizado_50 = []
 rss_mqo_regularizado_75 = []
 rss_mqo_regularizado_100 = []
-
 
 # >>>>>>>>>>>>  TREINAMENTO E TESTE  <<<<<<<<<<<<
 
@@ -51,6 +50,7 @@ for i in range(500):
     # Sem intercepto
     X_rodada_sem_interceptor = X_sem_intercepor[idx,:] # X embaralhado
     X_treino_sem_interceptor = X_rodada_sem_interceptor[:int(N*.8),:] # 80% para treino
+    # Coloquei aqui, mas não serve de nada
     X_teste_sem_interceptor = X_rodada_sem_interceptor[int(N*.8):,:] # 20% para teste
 
     # Com intercepto
