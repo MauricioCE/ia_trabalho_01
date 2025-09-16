@@ -11,15 +11,14 @@ class MQO:
     - B: (p+1, C) se add_intercept=True, senão (p, C)
     Decisão por argmax dos scores lineares.
     """
-    def __init__(self, add_intercept: bool = True):
+    def __init__(self, add_intercept: bool = True, C: int | None = None):
         self.add_intercept = add_intercept
         self.B = None
-        self.C = None
+        self.C = C
         self.p = None
 
-    @staticmethod
-    def _one_hot(y: np.ndarray, C: int) -> np.ndarray:
-        Y = np.zeros((y.size, C))
+    def _one_hot(self, y: np.ndarray) -> np.ndarray:
+        Y = np.zeros((y.size, self.C))
         Y[np.arange(y.size), y - 1] = 1.0
         return Y
 
@@ -29,18 +28,15 @@ class MQO:
         N = X.shape[0]
         return np.hstack([np.ones((N, 1)), X])
 
-    def fit(self, X: np.ndarray, y: np.ndarray, C: int | None = None):
+    def fit(self, X: np.ndarray, y: np.ndarray):
         """
         Ajusta B pela solução fechada de MQO:
         B = (X^T X)^(-1) X^T Y   (usando pinv para estabilidade numérica)
         """
-        if C is None:
-            C = int(np.max(y))
-        self.C = C
         self.p = X.shape[1]
 
-        Xaug = self._augment(X)            # (N, p+1) se intercepto
-        Y    = self._one_hot(y, C)         # (N, C)
+        Xaug = self._augment(X)    # (N, p+1) se intercepto
+        Y    = self._one_hot(y)    # (N, C)
 
         # pseudo-inversa para estabilidade
         self.B = np.linalg.pinv(Xaug.T @ Xaug) @ (Xaug.T @ Y)  # (p+1, C)

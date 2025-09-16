@@ -6,14 +6,15 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from dadosQ2.models_mqo import MQO
-from dadosQ2.gaussian_classifiers import GaussianClassifier
+
+from modelos.gaussian_classifiers import GaussianClassifier
+from modelos.mqo import MQO
 
 # ----------------------------------------------------
 # Configurações básicas
 # ----------------------------------------------------
-DATA_PATH = "dadosQ2/EMGsDataset.csv"   # ajuste se necessário
-SHOW_PLOTS = True              # por enquanto, nada de gráficos
+DATA_PATH = "dados/EMGsDataset.csv"   # ajuste se necessário
+SHOW_PLOTS = False              # por enquanto, nada de gráficos
 
 def one_hot_from_labels(labels, C):
     """
@@ -49,7 +50,6 @@ def main():
     classes = np.unique(y_all)
     C = classes.size
 
-
     #prepara variáveis no formato pedido
     # --- para MQO:
     X_MQO = X_all                          # (N,p)
@@ -58,8 +58,6 @@ def main():
     # --- para Bayesianos:
     X_BAYES = X_all.T        # (p,N)
     Y_BAYES = Y_MQO.T        # (C,N)
-
-
 
     # 4) Resumo rápido
     print("==============================================")
@@ -95,7 +93,7 @@ def main():
     # ------------------------------------------------
 
     # ETAPA 3 — MQO tradicional (one-vs-rest)
-    mqo = MQO(add_intercept=True).fit(X_MQO, y_all, C)
+    mqo = MQO(add_intercept=True, C=C).fit(X_MQO, y_all)
     print("[MQO] Modelo treinado. Formato da matriz B:", mqo.B.shape)
     # (opcional) teste rápido de re-substituição só para ver se está ok:
     y_pred_resub = mqo.predict(X_MQO)
@@ -141,28 +139,28 @@ def main():
         ntr = int(0.8 * N)
         tr_idx, te_idx = idx[:ntr], idx[ntr:]
 
-        Xtr, ytr = X_all[tr_idx], y_all[tr_idx]
-        Xte, yte = X_all[te_idx], y_all[te_idx]
+        X_treino, y_treino = X_all[tr_idx], y_all[tr_idx]
+        X_teste, y_teste = X_all[te_idx], y_all[te_idx]
 
         # 2) --- MQO tradicional (one-vs-rest) ---
-        # mqo = MQOOVR(add_intercept=True).fit(Xtr, ytr, C)
-        # yhat_mqo = mqo.predict(Xte)
-        # acc_MQO.append(np.mean(yhat_mqo == yte))
+        mqo = MQO(add_intercept=True, C=C).fit(X_treino, y_treino)
+        yhat_mqo = mqo.predict(X_teste)
+        acc_MQO.append(np.mean(yhat_mqo == y_teste))
 
         # 3) --- Gaussiano Tradicional (Cirillo) ---
         # a classe espera (p,N) e (1,N)
-        Xtr_b = Xtr.T
-        ytr_b = ytr.reshape(1, -1)
-        Xte_b = Xte.T
+        Xtr_b = X_treino.T
+        ytr_b = y_treino.reshape(1, -1)
+        Xte_b = X_teste.T
 
-        gc = GaussianClassifier(Xtr_b, ytr_b)
-        gc.fit()
+        # gc = GaussianClassifier(Xtr_b, ytr_b)
+        # gc.fit()
 
         # predict é por amostra (coluna): fazemos uma lista-comprehension
-        yhat_gtrad = gc.predict #np.array([gc.predict(Xte_b[:, [j]]) for j in range(Xte_b.shape[1])], dtype=int).ravel()
+        # yhat_gtrad = gc.predict #np.array([gc.predict(Xte_b[:, [j]]) for j in range(Xte_b.shape[1])], dtype=int).ravel()
         # acc_GTRAD.append(np.mean(yhat_gtrad == yte))
-        bp = 1;
-        acc_GTRAD.append(yhat_gtrad)
+        bp = 1
+        # acc_GTRAD.append(yhat_gtrad)
         # (opcional) feedback de progresso
         if (r + 1) % 50 == 0:
             print(f"[Monte Carlo] rodadas concluídas: {r+1}/{R}")
@@ -171,15 +169,15 @@ def main():
     def resumo_stats(v):
         v = np.array(v, dtype=float)
         return np.mean(v), np.std(v, ddof=1), np.min(v), np.max(v)
-
+    print(np.mean(acc_MQO))
     print("\n================  RESULTADOS PARCIAIS (Acurácia)  ================")
     print(f"{'Modelo':35s}  {'Média':>8s}  {'Desv.Pad.':>10s}  {'Maior':>8s}  {'Menor':>8s}")
-    for nome, accs in [
-        #("MQO tradicional", acc_MQO),
-        ("Gaussiano Tradicional", acc_GTRAD),
-    ]:
-        m, s, vmin, vmax = resumo_stats(accs)
-        print(f"{nome:35s}  {m:8.4f}  {s:10.4f}  {vmax:8.4f}  {vmin:8.4f}")
+    # for nome, accs in [
+    #     #("MQO tradicional", acc_MQO),
+    #     ("Gaussiano Tradicional", acc_GTRAD),
+    # ]:
+        # m, s, vmin, vmax = resumo_stats(accs)
+        # print(f"{nome:35s}  {m:8.4f}  {s:10.4f}  {vmax:8.4f}  {vmin:8.4f}")
 
 
     # ------------------------------------------------
