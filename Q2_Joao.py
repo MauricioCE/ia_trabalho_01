@@ -135,7 +135,7 @@ def main():
     acc_MQO = []
     acc_GTRAD = []
 
-    rng = np.random.default_rng(42)  # semente reprodutível (opcional)
+    rng = np.random.default_rng(42)  # semente reprodutível
 
     for r in range(R):
         # 1) split 80/20 (um split por rodada, reaproveitado por TODOS os modelos)
@@ -147,12 +147,12 @@ def main():
         Xte, yte = X_all[te_idx], y_all[te_idx]
 
         # 2) --- MQO tradicional (one-vs-rest) ---
-        mqo = MQOOVR(add_intercept=True).fit(Xtr, ytr, C)
-        yhat_mqo = mqo.predict(Xte)
-        acc_MQO.append(np.mean(yhat_mqo == yte))
+        # mqo = MQOOVR(add_intercept=True).fit(Xtr, ytr, C)
+        # yhat_mqo = mqo.predict(Xte)
+        # acc_MQO.append(np.mean(yhat_mqo == yte))
 
-        # 3) --- Gaussiano Tradicional (professor) ---
-        # a classe do professor espera (p,N) e (1,N)
+        # 3) --- Gaussiano Tradicional (Cirillo) ---
+        # a classe espera (p,N) e (1,N)
         Xtr_b = Xtr.T
         ytr_b = ytr.reshape(1, -1)
         Xte_b = Xte.T
@@ -161,9 +161,10 @@ def main():
         gc.fit()
 
         # predict é por amostra (coluna): fazemos uma lista-comprehension
-        yhat_gtrad = np.array([gc.predict(Xte_b[:, [j]]) for j in range(Xte_b.shape[1])], dtype=int).ravel()
-        acc_GTRAD.append(np.mean(yhat_gtrad == yte))
-
+        yhat_gtrad = gc.predict #np.array([gc.predict(Xte_b[:, [j]]) for j in range(Xte_b.shape[1])], dtype=int).ravel()
+        # acc_GTRAD.append(np.mean(yhat_gtrad == yte))
+        bp = 1;
+        acc_GTRAD.append(yhat_gtrad)
         # (opcional) feedback de progresso
         if (r + 1) % 50 == 0:
             print(f"[Monte Carlo] rodadas concluídas: {r+1}/{R}")
@@ -176,7 +177,7 @@ def main():
     print("\n================  RESULTADOS PARCIAIS (Acurácia)  ================")
     print(f"{'Modelo':35s}  {'Média':>8s}  {'Desv.Pad.':>10s}  {'Maior':>8s}  {'Menor':>8s}")
     for nome, accs in [
-        ("MQO tradicional", acc_MQO),
+        #("MQO tradicional", acc_MQO),
         ("Gaussiano Tradicional", acc_GTRAD),
     ]:
         m, s, vmin, vmax = resumo_stats(accs)
