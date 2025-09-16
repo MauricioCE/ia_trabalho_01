@@ -7,7 +7,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from modelos.gaussian_classifiers import GaussianClassifier
+from modelos.gauss_tradicional import GaussTradicional
 from modelos.mqo import MQO
 
 # ----------------------------------------------------
@@ -109,7 +109,7 @@ def main():
     # Já temos X_BAYES = X_all.T (p, N). Vamos só ajustar y:
     y_bayes = y_all.reshape(1, -1)          # (1, N)
 
-    gc_trad = GaussianClassifier(X_BAYES, y_bayes)
+    gc_trad = GaussTradicional(X_BAYES, y_bayes)
     gc_trad.fit()
     print("[Gaussiano Tradicional] Treinado com sucesso.",
           f"C={gc_trad.C} classes, p={gc_trad.p} features, N={gc_trad.N} amostras.")

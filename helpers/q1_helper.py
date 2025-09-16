@@ -90,7 +90,7 @@ def exportar_dados_para_csv(resultados):
     os.makedirs('dados', exist_ok=True)
     df_resultados = pd.DataFrame.from_dict(resultados, orient='index')
     df_resultados.index.name = 'Modelo'
-    caminho_arquivo = os.path.join('dados', 'resultados.csv')
+    caminho_arquivo = os.path.join('dados', 'resultados_q1.csv')
     df_resultados.to_csv(caminho_arquivo, index=True, sep=';', decimal=',')
 
     print("Arquivo 'resultados.csv' criado com sucesso na pasta 'dados'.")
