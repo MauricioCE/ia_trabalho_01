@@ -34,7 +34,7 @@ acuracias_CGB = [] # Classificador Gaussiano de Bayes Ingenuo
 
 for i in range(500):
     idx = np.random.permutation(N)
-
+    
     X_rodada = X_MQO_features[idx,:] # X  embaralhado
     Y_rodada = Y_MQO_classes_one_shot[idx,:] # Y embaralhado. Já é one-shot
 
@@ -42,8 +42,7 @@ for i in range(500):
     classes_treino = Y_rodada[:int(N*.8),:] # 80% para treino. Já é one-shot
 
     features_teste = X_rodada[int(N*.8):,:] # 20% para teste
-    features_teste_sample = X_rodada[int(0.8 * features.shape[0]), :].reshape(1,2)
-    
+    features_teste_sample = X_rodada[int(0.8 * features.shape[0]), :].reshape(1,2) # Prof
     classes_teste = Y_rodada[int(N*.8):,:] # 20% para teste. Já é one-shot
     
     # 1. Instanciar e treinar os modelos
@@ -58,14 +57,15 @@ for i in range(500):
     predicao_CGT = modelo_CGT.predict(features_teste_sample)
 
     # 3. Calcular e armazenar as acurácias
-    acuracias_MQO.append(calculate_accuracy(np.argmax(classes_teste, axis=1), predicao_MQO))
+    indices_classes_teste = np.argmax(classes_teste, axis=1) + 1
+    acuracias_MQO.append(calculate_accuracy(indices_classes_teste, predicao_MQO))
     acuracias_CGT.append(calculate_accuracy(classes_teste.T, predicao_CGT))
 
 media_mqo = np.mean(acuracias_MQO)
 media_CGT = np.mean(acuracias_CGT)
 
-print(media_mqo)
-print(media_CGT)
+print(f"MQO: {media_mqo}")
+print(f"CGT: {media_CGT}")
 
 # Gráfico de dispersão dos dados
 # grafico_dispersao_inicial(dados, classe_ids)

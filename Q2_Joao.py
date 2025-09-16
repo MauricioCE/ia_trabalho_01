@@ -123,8 +123,6 @@ def main():
     acc_resub = np.mean(preds == y_all)
     print(f"[Gaussiano Tradicional] Acurácia (re-substituição): {acc_resub:.4f}")
 
-
-
     # ------------------------------------------------
     # ETAPA 4 — Validação Monte Carlo (R=500)
     # ------------------------------------------------

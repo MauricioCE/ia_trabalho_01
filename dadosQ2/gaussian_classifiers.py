@@ -9,7 +9,6 @@ class GaussianClassifier:
         self.X = [X_train[:,y_train[0,:]==i] for i in self.classes]
         self.n = [Xi.shape[1] for Xi in self.X]
         
-        
         self.Sigma = [None]*self.C
         self.Sigma_det = [None]*self.C
         self.Sigma_inv = [None]*self.C
