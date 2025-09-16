@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import os
 
 # Fazer a predição
 def predicao(X,beta):
@@ -62,8 +62,8 @@ def plotar_modelo_regressao(X, y, beta, tipo_modelo, nome_modelo):
     plt.grid(color='gray', linestyle='--', linewidth=0.2)
     plt.show()
 
-#
-def imprimir_tabela_resultados(resultados_estatisticos):
+# 
+def imprimir_tabela_resultados(resultados_dic):
     # Defina a largura das colunas para alinhamento
     col_width = 28
     num_width = 15
@@ -75,23 +75,22 @@ def imprimir_tabela_resultados(resultados_estatisticos):
     print(line)
 
     # Imprime os resultados de cada modelo, iterando sobre o dicionário
-    for nome_modelo, stats in resultados_estatisticos.items():
-        media = stats['media']
-        desvio_padrao = stats['desvio_padrao']
-        maior_valor = stats['maior_valor']
-        menor_valor = stats['menor_valor']
+    for modelo, dados in resultados_dic.items():
+        media = dados['media']
+        desvio_padrao = dados['desvio_padrao']
+        maior_valor = dados['maior_valor']
+        menor_valor = dados['menor_valor']
         
-        print(f"| {nome_modelo:<{col_width}} | {media:>{num_width}.2f} | {desvio_padrao:>{num_width}.2f} | {maior_valor:>{num_width}.2f} | {menor_valor:>{num_width}.2f} |")
+        print(f"| {modelo:<{col_width}} | {media:>{num_width}.2f} | {desvio_padrao:>{num_width}.2f} | {maior_valor:>{num_width}.2f} | {menor_valor:>{num_width}.2f} |")
     
     print(line)
 
-
+# Não consegui exportar pelo panda, então estou exportando para um csv e fazendo os gráficos no excel
 def exportar_dados_para_csv(resultados):
-    # 1. Converta o dicionário em um DataFrame.
+    os.makedirs('dados', exist_ok=True)
     df_resultados = pd.DataFrame.from_dict(resultados, orient='index')
     df_resultados.index.name = 'Modelo'
-    df_resultados.to_csv('resultados.csv', index=True, sep=';', decimal=',')
+    caminho_arquivo = os.path.join('dados', 'resultados.csv')
+    df_resultados.to_csv(caminho_arquivo, index=True, sep=';', decimal=',')
 
-    print("Arquivo 'resultados_estatisticos.csv' criado com sucesso com as casas decimais.")
-    print("\nPrimeiras 5 linhas do DataFrame:")
-    print(df_resultados.head())
+    print("Arquivo 'resultados.csv' criado com sucesso na pasta 'dados'.")

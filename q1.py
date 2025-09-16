@@ -1,11 +1,16 @@
 import numpy as np
 from numpy.linalg import pinv
-from q1_helper import predicao, plotar_grafico_1, plotar_modelo_regressao, imprimir_tabela_resultados, RSS, exportar_dados_para_csv
+from helpers.q1_helper import predicao, plotar_grafico_1, plotar_modelo_regressao, imprimir_tabela_resultados, RSS, exportar_dados_para_csv
 
-# >>>>>>>>>>>>  DADOS  <<<<<<<<<<<<
+# True mostras faz mostrar todos os gráficos
+MOSTRAR_GRAFICOS = False
+
+###############################################################
+#                           DADOS                             #
+###############################################################
 
 # Carregar os dados
-dados = np.loadtxt('aerogerador.dat', delimiter='\t')
+dados = np.loadtxt('dados/aerogerador.dat', delimiter='\t')
 
 # Transpor os dados
 dados_t = dados.T
@@ -15,7 +20,8 @@ X_sem_intercepor = dados[:, :-1]
 y = dados[:, -1:]  
 
 # Plotando o gráfico de dispersão
-# plotar_grafico_1(X, y)
+if (MOSTRAR_GRAFICOS):
+    plotar_grafico_1(X_sem_intercepor, y)
 
 # Pegando os tamanhos de N e y
 N, p = X_sem_intercepor.shape
@@ -36,13 +42,13 @@ rss_mqo_regularizado_50 = []
 rss_mqo_regularizado_75 = []
 rss_mqo_regularizado_100 = []
 
-# >>>>>>>>>>>>  TREINAMENTO E TESTE  <<<<<<<<<<<<
+###############################################################
+#                     TREINAMENTO E TESTE                     #
+###############################################################
 
 for i in range(500):
 
-    ###############################################################
-    #                      Gerando os dados                       #
-    ###############################################################
+    # #############  Gerando os dados  #############
 
     # Embaralhar os dados
     idx = np.random.permutation(N)
@@ -63,9 +69,7 @@ for i in range(500):
     y_treino = y_rodada[:int(N*.8),:] # 80% para treino
     y_teste = y_rodada[int(N*.8):,:] # 20% para teste
 
-    ###############################################################
-    #                   Treinamento dos modelos                   #
-    ###############################################################
+    # #############  Treinamento dos modelos  #############
 
     # Modelo MQO Regularizado
     betas_hat_MQO_regularizado = {}
@@ -87,9 +91,7 @@ for i in range(500):
     # Modelo baseado na média
     beta_hat_MEDIA = np.array([ [np.mean(y_treino)], [0] ])
 
-    ###############################################################
-    #                     Teste de desempenho                     #
-    ###############################################################
+    # #############  Teste de desempenho  #############
 
     y_pred = predicao(X_teste_com_interceptor, beta_hat_MQO_sem_interceptor)
     rss_mqo_sem_interceptor.append(RSS(y_teste, y_pred))
@@ -112,21 +114,20 @@ for i in range(500):
         elif valor_lambda == 1:
             rss_mqo_regularizado_100.append(rss)
 
-    ###############################################################
-    #                          Gráficos                          #
-    ###############################################################
+    # #############  Gráficos  #############
 
-    # plotar_modelo_regressao(X_treino_sem_interceptor, y_treino, beta_hat_MQO_sem_interceptor, "linear", "MQO sem interceptor")
-    
-    # plotar_modelo_regressao(X_treino_sem_interceptor, y_treino, beta_hat_MEDIA[0], "media", "Modelo média")
+    if (MOSTRAR_GRAFICOS):
+        plotar_modelo_regressao(X_treino_sem_interceptor, y_treino, beta_hat_MQO_sem_interceptor, "linear", "MQO sem interceptor")
+        
+        plotar_modelo_regressao(X_treino_sem_interceptor, y_treino, beta_hat_MEDIA[0], "media", "Modelo média")
 
-    # for valor_lambda, beta in betas_hat_MQO_regularizado.items():
-    #     nome_modelo = f"MQO regularizado (lambda={valor_lambda})"
-    #     plotar_modelo_regressao(X_treino_sem_interceptor, y_treino, beta, "linear", nome_modelo)
+        for valor_lambda, beta in betas_hat_MQO_regularizado.items():
+            nome_modelo = f"MQO regularizado (lambda={valor_lambda})"
+            plotar_modelo_regressao(X_treino_sem_interceptor, y_treino, beta, "linear", nome_modelo)
 
-
-
-# >>>>>>>>>>>>  CALCULANDO AS ESTATÍSTICAS  <<<<<<<<<<<<
+###############################################################
+#                  CALCULANDO AS ESTATÍSTICAS                 #
+###############################################################
 
 resultados_para_tabela = {
     "Média da variável dependente": {
@@ -173,8 +174,9 @@ resultados_para_tabela = {
     },
 }
 
-
-# >>>>>>>>>>>>  PRINTANDO OS RESULTADOS  <<<<<<<<<<<<
+###############################################################
+#                    PRINTANDO OS RESULTADOS                  #
+###############################################################
 
 imprimir_tabela_resultados(resultados_para_tabela)
 exportar_dados_para_csv(resultados_para_tabela)

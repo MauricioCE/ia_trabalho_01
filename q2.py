@@ -1,8 +1,8 @@
 import numpy as np
 from numpy.linalg import pinv
 import matplotlib.pyplot as plt
-from q2_classes import MQO, GaussianClassifier
-from q2_helper import calculate_accuracy, grafico_dispersao_inicial
+from _mauricio.q2_classes import MQO, GaussianClassifier
+from helpers.q2_helper import calculate_accuracy, grafico_dispersao_inicial
 
 # >>>>>>>>>>>>  DADOS  <<<<<<<<<<<<
 

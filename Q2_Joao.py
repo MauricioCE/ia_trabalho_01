@@ -6,7 +6,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from dadosQ2.models_mqo import MQOOVR
+from dadosQ2.models_mqo import MQO
 from dadosQ2.gaussian_classifiers import GaussianClassifier
 
 # ----------------------------------------------------
@@ -95,7 +95,7 @@ def main():
     # ------------------------------------------------
 
     # ETAPA 3 — MQO tradicional (one-vs-rest)
-    mqo = MQOOVR(add_intercept=True).fit(X_MQO, y_all, C)
+    mqo = MQO(add_intercept=True).fit(X_MQO, y_all, C)
     print("[MQO] Modelo treinado. Formato da matriz B:", mqo.B.shape)
     # (opcional) teste rápido de re-substituição só para ver se está ok:
     y_pred_resub = mqo.predict(X_MQO)

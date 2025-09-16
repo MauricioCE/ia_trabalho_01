@@ -3,7 +3,7 @@
 
 import numpy as np
 
-class MQOOVR:
+class MQO:
     """
     Classificador linear via MQO em esquema One-Vs-Rest.
     - X: (N, p)
