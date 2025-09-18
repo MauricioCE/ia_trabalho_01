@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from helpers.q2_helper import calculate_accuracy, grafico_dispersao_inicial
+from modelos.gauss_covariancia import GaussCovarianciasGlobal
 from modelos.gauss_tradicional import GaussTradicional
 from modelos.mqo import MQO
 
@@ -59,19 +60,23 @@ for count in range(interacoes):
 
     modelo_MQO = MQO(add_intercept = True, C = C)
     modelo_CGT = GaussTradicional(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
+    modelo_CGC = GaussCovarianciasGlobal(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
 
     modelo_MQO.fit(X_treino, y_treino)
     modelo_CGT.fit()
+    modelo_CGC.fit()
 
     # ***********  Predições  *********** #
 
     predicao_MQO = modelo_MQO.predict(X_teste)
     predicao_CGT = modelo_CGT.predict(X_teste_sample)
+    predicao_CGC = modelo_CGC.predict(X_teste_sample)
 
     # ***********  Acurácias  *********** #
     
     acuracias_MQO.append(np.mean(predicao_MQO == y_teste))
     acuracias_CGT.append(calculate_accuracy(y_teste.T, predicao_CGT))
+    acuracias_CGC.append(calculate_accuracy(y_teste.T, predicao_CGC))
 
     # ***********  Contador de progresso  *********** #
 
@@ -85,9 +90,11 @@ for count in range(interacoes):
 
 media_mqo = np.mean(acuracias_MQO)
 media_CGT = np.mean(acuracias_CGT)
+media_CGC = np.mean(acuracias_CGC)
 
 print(f"MQO: {media_mqo:.4f}")
 print(f"CGT: {media_CGT}")
+print(f"CGT: {media_CGC}")
 
 # Gráfico de dispersão dos dados
 # grafico_dispersao_inicial(dados, classe_ids)
