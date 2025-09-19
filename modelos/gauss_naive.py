@@ -18,8 +18,8 @@ class GaussNaive(GaussTradicional):
         scores = np.zeros(self.C)
         for i in range(self.C):
             termo_classe = np.log(self.P[i])
-            termo_caracteristicas = -0.5 * np.sum(np.log(2 * np.pi * self.Sigma[i])) \
+            termo = -0.5 * np.sum(np.log(2 * np.pi * self.Sigma[i])) \
                                     -0.5 * np.sum(((X_teste_sample - self.mu[i])**2) / self.Sigma[i])
-            scores[i] = termo_classe + termo_caracteristicas
+            scores[i] = termo_classe + termo
 
         return np.argmax(scores) + 1

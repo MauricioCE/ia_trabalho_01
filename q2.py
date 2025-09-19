@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from helpers.q2_helper import calculate_accuracy, grafico_dispersao_inicial
+from modelos.gauss_cov_agregrada import GaussCovarianciaAgregada
 from modelos.gauss_covariancia import GaussCovarianciasGlobal
-from modelos.gauss_naive import GaussNaive
-from modelos.gauss_tradicional import GaussTradicional
 from modelos.mqo import MQO
+from modelos.gauss_tradicional import GaussTradicional
+from modelos.gauss_naive import GaussNaive
 
 # *********************************************************** #
 #                           DADOS                             #
@@ -31,12 +32,11 @@ Y_gauss = Y_mqo.T
 
 # Inicializar listas para armazenar as acurácias
 acuracias_MQO = [] # Mínimos Quadrados Ordinários
-acuracias_CGT = [] # Classificador Gaussiano Tradicional
-acuracias_CGC = [] # Classificador Gaussiano com Covariâncias Iguais
-acuracias_CGM = [] # Classificador Gaussiano com Matriz Agregada
-acuracias_CGR = [] # Classificador Gaussiano com Matriz Regularizado
-acuracias_CGN = [] # Classificador Gaussiano de Bayes Ingenuo
-
+acuracias_G_T = [] # Classificador Gaussiano Tradicional
+acuracias_G_C_G = [] # Classificador Gaussiano com Covariâncias Global
+acuracias_G_M_A= [] # Classificador Gaussiano com Matriz Agregada
+acuracias_G_M_R = [] # Classificador Gaussiano com Matriz Regularizado
+acuracias_G_B_N = [] # Classificador Gaussiano de Bayes Naive
 # *********************************************************** #
 #                     TREINAMENTO E TESTE                     #
 # *********************************************************** #
@@ -60,29 +60,33 @@ for count in range(interacoes):
     # ***********  Instanciar e treinar os modelos  *********** #
 
     modelo_MQO = MQO(add_intercept = True, C = C)
-    modelo_CGT = GaussTradicional(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
-    modelo_CGC = GaussCovarianciasGlobal(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
-    modelo_CGN = GaussNaive(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
+    modelo_G_T = GaussTradicional(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
+    modelo_G_C_G = GaussCovarianciasGlobal(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
+    modelo_G_B_N = GaussNaive(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
+    modelo_G_M_A = GaussCovarianciaAgregada(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
 
     modelo_MQO.fit(X_treino, y_treino)
-    modelo_CGT.fit()
-    modelo_CGC.fit()
-    modelo_CGN.fit()
+    modelo_G_T.fit()
+    modelo_G_C_G.fit()
+    modelo_G_B_N.fit()
+    modelo_G_M_A.fit()
 
     # ***********  Predições  *********** #
 
     predicao_MQO = modelo_MQO.predict(X_teste)
-    predicao_CGT = modelo_CGT.predict(X_teste_sample)
-    predicao_CGC = modelo_CGC.predict(X_teste_sample)
-    predicao_CGN = modelo_CGN.predict(X_teste_sample)
+    predicao_G_T = modelo_G_T.predict(X_teste_sample)
+    predicao_G_C_G = modelo_G_C_G.predict(X_teste_sample)
+    predicao_G_B_N = modelo_G_B_N.predict(X_teste_sample)
+    predicao_G_M_A = modelo_G_M_A.predict(X_teste_sample)
 
     # ***********  Acurácias  *********** #
     
     acuracias_MQO.append(np.mean(predicao_MQO == y_teste))
-    acuracias_CGT.append(calculate_accuracy(y_teste.T, predicao_CGT))
-    acuracias_CGC.append(calculate_accuracy(y_teste.T, predicao_CGC))
-    acuracias_CGN.append(calculate_accuracy(y_teste.T, predicao_CGN))
-
+    acuracias_G_T.append(calculate_accuracy(y_teste.T, predicao_G_T))
+    acuracias_G_C_G.append(calculate_accuracy(y_teste.T, predicao_G_C_G))
+    acuracias_G_B_N.append(calculate_accuracy(y_teste.T, predicao_G_B_N))
+    acuracias_G_M_A.append(calculate_accuracy(y_teste.T, predicao_G_M_A))
+    
     # ***********  Contador de progresso  *********** #
 
     if(contador_progresso  % 50 == 0):
@@ -95,15 +99,17 @@ print(f"{contador_progresso}/500\nFinalizado\n")
 #                            PRINTS                           #
 # *********************************************************** #
 
-media_mqo = np.mean(acuracias_MQO)
-media_CGT = np.mean(acuracias_CGT)
-media_CGC = np.mean(acuracias_CGC)
-media_CGN = np.mean(acuracias_CGN)
+media_MQO = np.mean(acuracias_MQO)
+media_G_T = np.mean(acuracias_G_T)
+media_G_C_G = np.mean(acuracias_G_C_G)
+media_G_B_N = np.mean(acuracias_G_B_N)
+media_G_M_A = np.mean(acuracias_G_M_A)
 
-print(f"MQO: {media_mqo:.4f}")
-print(f"Gauss Tradicional: {media_CGT}")
-print(f"Gauss Covariância Global: {media_CGC}")
-print(f"Gauss Naive: {media_CGN}")
+print(f"MQO: {media_MQO:.4f}")
+print(f"Gauss Tradicional: {media_G_T}")
+print(f"Gauss Covariância Global: {media_G_C_G}")
+print(f"Gauss Naive: {media_G_B_N}")
+print(f"Gauss Matriz Agregada: {media_G_M_A}")
 
 # Gráfico de dispersão dos dados
 # grafico_dispersao_inicial(dados, classe_ids)
