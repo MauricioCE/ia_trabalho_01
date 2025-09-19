@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from helpers.q2_helper import calculate_accuracy, grafico_dispersao_inicial
 from modelos.gauss_covariancia import GaussCovarianciasGlobal
+from modelos.gauss_naive import GaussNaive
 from modelos.gauss_tradicional import GaussTradicional
 from modelos.mqo import MQO
 
@@ -34,13 +35,13 @@ acuracias_CGT = [] # Classificador Gaussiano Tradicional
 acuracias_CGC = [] # Classificador Gaussiano com Covariâncias Iguais
 acuracias_CGM = [] # Classificador Gaussiano com Matriz Agregada
 acuracias_CGR = [] # Classificador Gaussiano com Matriz Regularizado
-acuracias_CGB = [] # Classificador Gaussiano de Bayes Ingenuo
+acuracias_CGN = [] # Classificador Gaussiano de Bayes Ingenuo
 
 # *********************************************************** #
 #                     TREINAMENTO E TESTE                     #
 # *********************************************************** #
 
-contador_progresso = 1
+contador_progresso = 0
 interacoes = 500
 for count in range(interacoes):
     # ***********  Aleatorizando os dados  *********** #
@@ -61,28 +62,34 @@ for count in range(interacoes):
     modelo_MQO = MQO(add_intercept = True, C = C)
     modelo_CGT = GaussTradicional(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
     modelo_CGC = GaussCovarianciasGlobal(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
+    modelo_CGN = GaussNaive(X_treino.T, y_treino.T.reshape(1,len(y_treino)))
 
     modelo_MQO.fit(X_treino, y_treino)
     modelo_CGT.fit()
     modelo_CGC.fit()
+    modelo_CGN.fit()
 
     # ***********  Predições  *********** #
 
     predicao_MQO = modelo_MQO.predict(X_teste)
     predicao_CGT = modelo_CGT.predict(X_teste_sample)
     predicao_CGC = modelo_CGC.predict(X_teste_sample)
+    predicao_CGN = modelo_CGN.predict(X_teste_sample)
 
     # ***********  Acurácias  *********** #
     
     acuracias_MQO.append(np.mean(predicao_MQO == y_teste))
     acuracias_CGT.append(calculate_accuracy(y_teste.T, predicao_CGT))
     acuracias_CGC.append(calculate_accuracy(y_teste.T, predicao_CGC))
+    acuracias_CGN.append(calculate_accuracy(y_teste.T, predicao_CGN))
 
     # ***********  Contador de progresso  *********** #
 
-    if(contador_progresso % 50 == 0):
+    if(contador_progresso  % 50 == 0):
         print(f"{contador_progresso}/500")
     contador_progresso = contador_progresso + 1
+
+print(f"{contador_progresso}/500\nFinalizado\n")
 
 # *********************************************************** #
 #                            PRINTS                           #
@@ -91,10 +98,12 @@ for count in range(interacoes):
 media_mqo = np.mean(acuracias_MQO)
 media_CGT = np.mean(acuracias_CGT)
 media_CGC = np.mean(acuracias_CGC)
+media_CGN = np.mean(acuracias_CGN)
 
 print(f"MQO: {media_mqo:.4f}")
-print(f"CGT: {media_CGT}")
-print(f"CGT: {media_CGC}")
+print(f"Gauss Tradicional: {media_CGT}")
+print(f"Gauss Covariância Global: {media_CGC}")
+print(f"Gauss Naive: {media_CGN}")
 
 # Gráfico de dispersão dos dados
 # grafico_dispersao_inicial(dados, classe_ids)

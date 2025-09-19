@@ -10,8 +10,6 @@ class GaussTradicional:
         # Separa os dados por classe (assume que y_train é uma matriz 2D)
         self.X = [X_train[:, y_train[0] == i] for i in self.classes]
 
-        bf = self.X
-
         # Conta quantas amostras há em cada classe
         self.n = [Xi.shape[1] for Xi in self.X]
 
