@@ -17,10 +17,15 @@ class GaussCovarianciaAgregada(GaussTradicional):
             Sigma_agregada += (self.n[i] - 1) * np.cov(self.X[i])
 
         self.Sigma = Sigma_agregada / (self.N - self.C)
+        self.Sigma = self.Sigma + 1e-6 * np.eye(self.p)
 
     def predict(self, X_teste_sample):
-        Sigma_inv = np.linalg.inv(self.Sigma)
-        log_det_Sigma = np.log(np.linalg.det(self.Sigma))
+        Sigma_inv = np.linalg.pinv(self.Sigma)
+        sign, log_det_Sigma = np.linalg.slogdet(self.Sigma)
+        if sign <= 0:
+            self.Sigma = self.Sigma + 1e-6 * np.eye(self.p)
+            Sigma_inv = np.linalg.pinv(self.Sigma)
+            sign, log_det_Sigma = np.linalg.slogdet(self.Sigma)
 
         pontuacoes = np.zeros(self.C)
         for i in range(self.C):
@@ -30,3 +35,34 @@ class GaussCovarianciaAgregada(GaussTradicional):
             pontuacoes[i] = prob_a_priori + termo
 
         return np.argmax(pontuacoes) + 1
+    
+    def predict_batch(self, X_test):
+        """
+        Predição vetorizada para Gauss com covariância POOLED (igual para classes).
+        X_test: (p, N_te) -> (N_te,)
+        Requer:
+        - self.Sigma (p,p), e calcular inv/logdet aqui
+        - self.mu[i] (p,1), self.P[i]
+        """
+        p, N_te = X_test.shape
+        C = self.C
+
+        means = np.hstack(self.mu).T                 # (C, p)
+
+        # inv + slogdet da pooled:
+        Sigma = self.Sigma + 1e-12*np.eye(p)
+        invS  = np.linalg.pinv(Sigma)
+        sign, logdet = np.linalg.slogdet(Sigma)
+        if sign <= 0:
+            Sigma = Sigma + 1e-6*np.eye(p)
+            invS  = np.linalg.pinv(Sigma)
+            sign, logdet = np.linalg.slogdet(Sigma)
+
+        logpri = np.log(np.array(self.P) + 1e-12)    # (C,)
+
+        X = X_test.T
+        diff = X[:, None, :] - means[None, :, :]     # (N_te, C, p)
+        maha = np.einsum('ncp,pq,ncq->nc', diff, invS, diff)
+
+        scores = logpri[None,:] - 0.5*(p*np.log(2.0*np.pi) + logdet + maha)
+        return np.argmax(scores, axis=1) + 1
