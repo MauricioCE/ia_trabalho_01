@@ -37,7 +37,7 @@ Y_gauss = Y_mqo.T
 os.makedirs("figs", exist_ok=True)
 
 # Dispersão inicial (salva em arquivo, sem abrir janela)
-grafico_dispersao_inicial(X, y, save_path="figs/01_dispersao.png", show=True)
+grafico_dispersao_inicial(X, y, save_path="figs/01_dispersao.png", show=False)
 
 
 
@@ -60,6 +60,20 @@ idx_demo = np.random.permutation(N)
 ntr_demo = int(0.8 * N)
 Xtr_demo, ytr_demo = X[idx_demo[:ntr_demo]], y[idx_demo[:ntr_demo]]
 Xte_demo, yte_demo = X[idx_demo[ntr_demo:]], y[idx_demo[ntr_demo:]]
+
+# Médias e covariâncias por classe no split demo
+means = []; covs = []
+for c in np.unique(ytr_demo):
+    Xc = Xtr_demo[ytr_demo == c]
+    means.append(Xc.mean(axis=0))
+    covs.append(np.cov(Xc.T, bias=False))
+means = np.array(means); covs = np.array(covs)
+
+from helpers.q2_helper import plot_gaussian_ellipses
+plot_gaussian_ellipses(means, covs, Xtr_demo, ytr_demo,
+                       "Elipses de Covariância (treino, split demo)",
+                       save_path="figs/21_elipses_cov.png", show=False)
+
 
 # --- MQO (demo) ---
 
@@ -222,38 +236,66 @@ for count in range(interacoes):
 
     # ***********  Predições  *********** #
 
+    #Antiga Errada:
     # predicao_MQO = modelo_MQO.predict(X_teste)
     # predicao_G_T = modelo_G_T.predict(X_teste_sample)
     # predicao_G_C_G = modelo_G_C_G.predict(X_teste_sample)
     # predicao_G_B_N = modelo_G_B_N.predict(X_teste_sample)
     # predicao_G_M_A = modelo_G_M_A.predict(X_teste_sample)
+
+    #Antiga Lenta:
+    # predicao_MQO = modelo_MQO.predict(X_teste)
+
+    # # Gauss Tradicional (toda a base de teste)
+    # preds_G_T = np.array([modelo_G_T.predict(X_teste[j, :].reshape(1,2).T)
+    #                     for j in range(X_teste.shape[0])], dtype=int)
+
+    # # Gauss Covariâncias Global
+    # preds_G_C_G = np.array([modelo_G_C_G.predict(X_teste[j, :].reshape(1,2).T)
+    #                         for j in range(X_teste.shape[0])], dtype=int)
+
+    # # Gauss Naive
+    # preds_G_B_N = np.array([modelo_G_B_N.predict(X_teste[j, :].reshape(1,2).T)
+    #                         for j in range(X_teste.shape[0])], dtype=int)
+
+    # # Gauss Matriz Agregada (pooled)
+    # preds_G_M_A = np.array([modelo_G_M_A.predict(X_teste[j, :].reshape(1,2).T)
+    #                         for j in range(X_teste.shape[0])], dtype=int)
+    
+    # # Gauss Friedman λ=0.25
+    # yhat_l025 = np.array([gc_l025.predict(X_teste[j, :].reshape(1,2).T)
+    #                         for j in range(X_teste.shape[0])], dtype=int)
+    
+    # yhat_l050 = np.array([gc_l050.predict(X_teste[j, :].reshape(1,2).T)
+    #                         for j in range(X_teste.shape[0])], dtype=int)
+    
+    # yhat_l075 = np.array([gc_l075.predict(X_teste[j, :].reshape(1,2).T)
+    #                         for j in range(X_teste.shape[0])], dtype=int)
+
+    #Nova Rápida:
+
+    # MQO já é batch
     predicao_MQO = modelo_MQO.predict(X_teste)
 
-    # Gauss Tradicional (toda a base de teste)
-    preds_G_T = np.array([modelo_G_T.predict(X_teste[j, :].reshape(1,2).T)
-                        for j in range(X_teste.shape[0])], dtype=int)
+    # Para todos os Gaussianos: use batch no formato (p, N_te)
+    Xte_T = X_teste.T
 
-    # Gauss Covariâncias Global
-    preds_G_C_G = np.array([modelo_G_C_G.predict(X_teste[j, :].reshape(1,2).T)
-                            for j in range(X_teste.shape[0])], dtype=int)
+    # Gauss Tradicional
+    preds_G_T   = modelo_G_T.predict_batch(Xte_T)
 
-    # Gauss Naive
-    preds_G_B_N = np.array([modelo_G_B_N.predict(X_teste[j, :].reshape(1,2).T)
-                            for j in range(X_teste.shape[0])], dtype=int)
+    # Gauss Covariâncias Global (uma Σ global)
+    preds_G_C_G = modelo_G_C_G.predict_batch(Xte_T)
 
-    # Gauss Matriz Agregada (pooled)
-    preds_G_M_A = np.array([modelo_G_M_A.predict(X_teste[j, :].reshape(1,2).T)
-                            for j in range(X_teste.shape[0])], dtype=int)
-    
-    # Gauss Friedman λ=0.25
-    yhat_l025 = np.array([gc_l025.predict(X_teste[j, :].reshape(1,2).T)
-                            for j in range(X_teste.shape[0])], dtype=int)
-    
-    yhat_l050 = np.array([gc_l050.predict(X_teste[j, :].reshape(1,2).T)
-                            for j in range(X_teste.shape[0])], dtype=int)
-    
-    yhat_l075 = np.array([gc_l075.predict(X_teste[j, :].reshape(1,2).T)
-                            for j in range(X_teste.shape[0])], dtype=int)
+    # Gauss Naive (diagonal)
+    preds_G_B_N = modelo_G_B_N.predict_batch(Xte_T)
+
+    # Gauss Matriz Agregada / Pooled (uma Σ pooled)
+    preds_G_M_A = modelo_G_M_A.predict_batch(Xte_T)
+
+    # Gauss Friedman (λ = 0.25, 0.50, 0.75)
+    yhat_l025   = gc_l025.predict_batch(Xte_T)
+    yhat_l050   = gc_l050.predict_batch(Xte_T)
+    yhat_l075   = gc_l075.predict_batch(Xte_T)
 
     # ***********  Acurácias  *********** #
     
@@ -320,12 +362,23 @@ tabela = [
     ("Gauss Friedman λ=0.75",       acc_G_FRIED_075),
 ]
 
+nomesAbreviados = [
+    ("MQO"),
+    ("Gauss Trad."),
+    ("Gauss Cov. Global"),
+    ("Gauss Naive"),
+    ("Gauss M. Agreg."),
+    ("G. Fried. λ=0.25"),
+    ("G. Fried. λ=0.50"),
+    ("G. Fried. λ=0.75"),
+]
+
 for nome, accs in tabela:
     m, s, vmax, vmin = resumo_stats(accs)
     print(f"{nome:35s}  {m:8.4f}  {s:10.4f}  {vmax:8.4f}  {vmin:8.4f}")
 
-plt.figure(figsize=(9,5))
-labels = [x[0] for x in tabela]
+plt.figure(figsize=(12,5))
+labels = nomesAbreviados
 dados  = [x[1] for x in tabela]
 plt.boxplot(dados, tick_labels=labels, showmeans=True)
 plt.ylabel("Acurácia (teste)")
@@ -334,6 +387,28 @@ plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig("figs/18_boxplot_acuracias.png", dpi=200, bbox_inches="tight")
 plt.close()
+
+
+# --- Efeito do λ na acurácia (Gauss Friedman) ---
+lambdas = np.array([0.25, 0.50, 0.75])
+means   = np.array([np.mean(acc_G_FRIED_025), np.mean(acc_G_FRIED_050), np.mean(acc_G_FRIED_075)])
+stds    = np.array([np.std(acc_G_FRIED_025, ddof=1), np.std(acc_G_FRIED_050, ddof=1), np.std(acc_G_FRIED_075, ddof=1)])
+
+plt.figure(figsize=(6,4))
+plt.errorbar(lambdas, means, yerr=stds, fmt='-o', capsize=4)
+plt.xlabel("λ (Friedman)"); plt.ylabel("Acurácia (teste)")
+plt.title("Efeito de λ no Gauss Regularizado")
+plt.grid(True, alpha=0.3); plt.tight_layout()
+plt.savefig("figs/19_lambda_vs_acc.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# Normaliza por linha (percentual por classe verdadeira)
+M_gc_pct = M_gc.astype(float) / M_gc.sum(axis=1, keepdims=True)
+# Reusa o plot existente; ele aceita floats (vai mostrar decimais)
+plot_confusion(M_gc_pct, "Confusão Normalizada — Gauss Tradicional (demo)",
+               save_path="figs/20_confusao_gauss_trad_pct.png", show=False)
+
 
 # Gráfico de dispersão dos dados
 # grafico_dispersao_inicial(dados, classe_ids)

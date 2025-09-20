@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import matplotlib.cm as cm
+from matplotlib.patches import Ellipse
 
 def grafico_dispersao_inicial(X, y, save_path=None, show=True):
     nomes = ["Neutro", "Sorriso", "Sobrancelhas Levantadas", "Surpreso", "Rabugento"]
@@ -108,30 +109,29 @@ def plot_decision_boundary(predict_fn, X, y, title,
     plt.close()
 
 
-def plot_gaussian_ellipses(means, covs, ax=None, n_std=2.0, save_path=None, show=True, **kw):
-    created_ax = ax is None
-    if ax is None:
-        fig, ax = plt.subplots(figsize=(6.2,5.2))
-    if ax is None: fig, ax = plt.subplots(figsize=(6.2,5.2))
+
+
+def plot_gaussian_ellipses(means, covs, X, y, title, n_std=2.0, save_path=None, show=True):
+    plt.figure(figsize=(6.2,5.2))
+    # pontos
+    classes = np.unique(y)
+    for c in classes:
+        m = (y == c)
+        plt.scatter(X[m,0], X[m,1], s=10, edgecolors='k', alpha=.6, label=f"Classe {c}")
+    # elipses
     for i in range(means.shape[0]):
         mu = means[i]; S = covs[i]
-        vals, vecs = np.linalg.eigh(S)
-        order = vals.argsort()[::-1]
+        vals, vecs = np.linalg.eigh(S); order = vals.argsort()[::-1]
         vals, vecs = vals[order], vecs[:,order]
         theta = np.degrees(np.arctan2(vecs[1,0], vecs[0,0]))
         width, height = 2*n_std*np.sqrt(vals)
-        from matplotlib.patches import Ellipse
-        e = Ellipse(xy=mu, width=width, height=height, angle=theta, fill=False, **kw)
-        ax.add_patch(e)
-
-    if created_ax:
-        if save_path:
-            plt.savefig(save_path, dpi=200, bbox_inches='tight')
-        if show:
-            plt.show()
-        plt.close()
-    return ax
-
+        e = Ellipse(xy=mu, width=width, height=height, angle=theta, fill=False, lw=1.2)
+        plt.gca().add_patch(e)
+    plt.title(title); plt.xlabel("Sensor 1"); plt.ylabel("Sensor 2")
+    plt.legend(fontsize=8); plt.grid(True, alpha=.3); plt.tight_layout()
+    if save_path: plt.savefig(save_path, dpi=200, bbox_inches="tight")
+    if show: plt.show()
+    plt.close()
 
 def confusion_matrix_5(y_true, y_pred, C=5):
     M = np.zeros((C,C), dtype=int)
