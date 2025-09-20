@@ -34,10 +34,10 @@ Y_mqo = y # Matriz
 X_gauss = X.T
 Y_gauss = Y_mqo.T
 
-os.makedirs("figs", exist_ok=True)
+os.makedirs("figsQ2", exist_ok=True)
 
 # Dispersão inicial (salva em arquivo, sem abrir janela)
-grafico_dispersao_inicial(X, y, save_path="figs/01_dispersao.png", show=False)
+grafico_dispersao_inicial(X, y, save_path="figsQ2/01_dispersao.png", show=False)
 
 
 
@@ -72,7 +72,7 @@ means = np.array(means); covs = np.array(covs)
 from helpers.q2_helper import plot_gaussian_ellipses
 plot_gaussian_ellipses(means, covs, Xtr_demo, ytr_demo,
                        "Elipses de Covariância (treino, split demo)",
-                       save_path="figs/21_elipses_cov.png", show=False)
+                       save_path="figsQ2/21_elipses_cov.png", show=False)
 
 
 # --- MQO (demo) ---
@@ -81,24 +81,24 @@ plot_gaussian_ellipses(means, covs, Xtr_demo, ytr_demo,
 mqo_demo = MQO(add_intercept=True, C=C); mqo_demo.fit(Xtr_demo, ytr_demo)
 plot_decision_boundary(lambda G: mqo_demo.predict(G), X, y,
                        "Fronteira — MQO (split demo)",
-                       save_path="figs/02_mqo_boundary.png", show=False)
+                       save_path="figsQ2/02_mqo_boundary.png", show=False)
 
 # Matriz de confusão do MQO neste split
 yhat_demo_mqo = mqo_demo.predict(Xte_demo)
 M_mqo = confusion_matrix_5(yte_demo, yhat_demo_mqo, C=5)
 plot_confusion(M_mqo, "Confusão — MQO (split demo)",
-               save_path="figs/03_mqo_confusion.png", show=False)
+               save_path="figsQ2/03_mqo_confusion.png", show=False)
 
 # --- Gauss Tradicional (demo) ---
 
 gc_demo = GaussTradicional(Xtr_demo.T, ytr_demo.reshape(1,-1)); gc_demo.fit()
 plot_decision_boundary(lambda G: gc_demo.predict_batch(G.T), X, y,
                        "Fronteira — Gauss Tradicional (demo)",
-                       save_path="figs/04_gauss_trad_boundary.png", show=False)
+                       save_path="figsQ2/04_gauss_trad_boundary.png", show=False)
 yhat_demo_gc = gc_demo.predict_batch(Xte_demo.T)
 M_gc = confusion_matrix_5(yte_demo, yhat_demo_gc, C=5)
 plot_confusion(M_gc, "Confusão — Gauss Tradicional (demo)",
-               save_path="figs/05_gauss_trad_confusion.png", show=False)
+               save_path="figsQ2/05_gauss_trad_confusion.png", show=False)
 
 # --- Gauss Covariância Global (demo) ---
 
@@ -109,13 +109,13 @@ plot_decision_boundary(
     lambda G: gc_global_demo.predict_batch(G.T),  # se não tiver predict_batch, ver OBS no fim
     X, y,
     "Fronteira — Gauss Cov. Global (demo)",
-    save_path="figs/06_gauss_global_boundary.png", show=False
+    save_path="figsQ2/06_gauss_global_boundary.png", show=False
 )
 
 yhat_demo_global = gc_global_demo.predict_batch(Xte_demo.T)
 M_global = confusion_matrix_5(yte_demo, yhat_demo_global, C=5)
 plot_confusion(M_global, "Confusão — Gauss Cov. Global (demo)",
-               save_path="figs/07_gauss_global_confusion.png", show=False)
+               save_path="figsQ2/07_gauss_global_confusion.png", show=False)
 
 
 # --- Gauss Matriz Agregada / Pooled (demo) ---
@@ -126,13 +126,13 @@ plot_decision_boundary(
     lambda G: gc_pooled_demo.predict_batch(G.T),
     X, y,
     "Fronteira — Gauss Pooled (demo)",
-    save_path="figs/08_gauss_pooled_boundary.png", show=False
+    save_path="figsQ2/08_gauss_pooled_boundary.png", show=False
 )
 
 yhat_demo_pooled = gc_pooled_demo.predict_batch(Xte_demo.T)
 M_pooled = confusion_matrix_5(yte_demo, yhat_demo_pooled, C=5)
 plot_confusion(M_pooled, "Confusão — Gauss Pooled (demo)",
-               save_path="figs/09_gauss_pooled_confusion.png", show=False)
+               save_path="figsQ2/09_gauss_pooled_confusion.png", show=False)
 
 
 # --- Gauss Naive (demo) ---
@@ -143,13 +143,13 @@ plot_decision_boundary(
     lambda G: gc_naive_demo.predict_batch(G.T),
     X, y,
     "Fronteira — Gauss Naive (demo)",
-    save_path="figs/10_gauss_naive_boundary.png", show=False
+    save_path="figsQ2/10_gauss_naive_boundary.png", show=False
 )
 
 yhat_demo_naive = gc_naive_demo.predict_batch(Xte_demo.T)
 M_naive = confusion_matrix_5(yte_demo, yhat_demo_naive, C=5)
 plot_confusion(M_naive, "Confusão — Gauss Naive (demo)",
-               save_path="figs/11_gauss_naive_confusion.png", show=False)
+               save_path="figsQ2/11_gauss_naive_confusion.png", show=False)
 
 
 # --- Gauss Friedman λ=0.25 (demo) ---
@@ -159,12 +159,12 @@ plot_decision_boundary(
     lambda G: gc_l025_demo.predict_batch(G.T),
     X, y,
     "Fronteira — Gauss Friedman λ=0.25 (demo)",
-    save_path="figs/12_friedman_025_boundary.png", show=False
+    save_path="figsQ2/12_friedman_025_boundary.png", show=False
 )
 yhat_demo_l025 = gc_l025_demo.predict_batch(Xte_demo.T)
 M_l025 = confusion_matrix_5(yte_demo, yhat_demo_l025, C=5)
 plot_confusion(M_l025, "Confusão — Gauss Friedman λ=0.25 (demo)",
-               save_path="figs/13_friedman_025_confusion.png", show=False)
+               save_path="figsQ2/13_friedman_025_confusion.png", show=False)
 
 # --- Gauss Friedman λ=0.50 (demo) ---
 gc_l050_demo = GaussTradicional(Xtr_demo.T, ytr_demo.reshape(1, -1), lam=0.50)
@@ -173,12 +173,12 @@ plot_decision_boundary(
     lambda G: gc_l050_demo.predict_batch(G.T),
     X, y,
     "Fronteira — Gauss Friedman λ=0.50 (demo)",
-    save_path="figs/14_friedman_050_boundary.png", show=False
+    save_path="figsQ2/14_friedman_050_boundary.png", show=False
 )
 yhat_demo_l050 = gc_l050_demo.predict_batch(Xte_demo.T)
 M_l050 = confusion_matrix_5(yte_demo, yhat_demo_l050, C=5)
 plot_confusion(M_l050, "Confusão — Gauss Friedman λ=0.50 (demo)",
-               save_path="figs/15_friedman_050_confusion.png", show=False)
+               save_path="figsQ2/15_friedman_050_confusion.png", show=False)
 
 # --- Gauss Friedman λ=0.75 (demo) ---
 gc_l075_demo = GaussTradicional(Xtr_demo.T, ytr_demo.reshape(1, -1), lam=0.75)
@@ -187,12 +187,12 @@ plot_decision_boundary(
     lambda G: gc_l075_demo.predict_batch(G.T),
     X, y,
     "Fronteira — Gauss Friedman λ=0.75 (demo)",
-    save_path="figs/16_friedman_075_boundary.png", show=False
+    save_path="figsQ2/16_friedman_075_boundary.png", show=False
 )
 yhat_demo_l075 = gc_l075_demo.predict_batch(Xte_demo.T)
 M_l075 = confusion_matrix_5(yte_demo, yhat_demo_l075, C=5)
 plot_confusion(M_l075, "Confusão — Gauss Friedman λ=0.75 (demo)",
-               save_path="figs/17_friedman_075_confusion.png", show=False)
+               save_path="figsQ2/17_friedman_075_confusion.png", show=False)
 # *********************************************************** #
 
 contador_progresso = 0
@@ -385,7 +385,7 @@ plt.ylabel("Acurácia (teste)")
 plt.title("Distribuição das Acurácias — Monte Carlo")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig("figs/18_boxplot_acuracias.png", dpi=200, bbox_inches="tight")
+plt.savefig("figsQ2/18_boxplot_acuracias.png", dpi=200, bbox_inches="tight")
 plt.close()
 
 
@@ -399,7 +399,7 @@ plt.errorbar(lambdas, means, yerr=stds, fmt='-o', capsize=4)
 plt.xlabel("λ (Friedman)"); plt.ylabel("Acurácia (teste)")
 plt.title("Efeito de λ no Gauss Regularizado")
 plt.grid(True, alpha=0.3); plt.tight_layout()
-plt.savefig("figs/19_lambda_vs_acc.png", dpi=200, bbox_inches="tight")
+plt.savefig("figsQ2/19_lambda_vs_acc.png", dpi=200, bbox_inches="tight")
 plt.close()
 
 
@@ -407,7 +407,7 @@ plt.close()
 M_gc_pct = M_gc.astype(float) / M_gc.sum(axis=1, keepdims=True)
 # Reusa o plot existente; ele aceita floats (vai mostrar decimais)
 plot_confusion(M_gc_pct, "Confusão Normalizada — Gauss Tradicional (demo)",
-               save_path="figs/20_confusao_gauss_trad_pct.png", show=False)
+               save_path="figsQ2/20_confusao_gauss_trad_pct.png", show=False)
 
 
 # Gráfico de dispersão dos dados

@@ -36,7 +36,7 @@ def plotar_grafico_1(X, y):
     plt.show()
 
 # Função para plotar o gráfico de dispersão com a linha de regressão
-def plotar_modelo_regressao(X, y, beta, tipo_modelo, nome_modelo):
+def plotar_modelo_regressao(X, y, beta, tipo_modelo, nome_modelo, grau=None):
    
     # Plota os dados observados
     plt.scatter(X, y, c='r',
@@ -52,7 +52,13 @@ def plotar_modelo_regressao(X, y, beta, tipo_modelo, nome_modelo):
     
     elif tipo_modelo == 'media':
         plt.axhline(y=beta, color='green', linestyle='--', linewidth=2, label='Modelo da Média')
-        
+    elif tipo_modelo == 'polinomial':
+        x_range = np.linspace(np.min(X), np.max(X), 200).reshape(-1, 1)
+        from helpers.q1_helper import poly_design  # se estiver em outro módulo
+        Phi = poly_design(x_range, grau if grau is not None else (beta.shape[0]-1))
+        y_pred = Phi @ beta
+        plt.plot(x_range, y_pred, color='purple', linewidth=2, label=f'Polinomial (d={grau})')
+            
     # Adiciona títulos e legendas
     plt.xlabel("Velocidade do vento")
     plt.ylabel("Potência gerada")
@@ -94,3 +100,17 @@ def exportar_dados_para_csv(resultados):
     df_resultados.to_csv(caminho_arquivo, index=True, sep=';', decimal=',')
 
     print("Arquivo 'resultados.csv' criado com sucesso na pasta 'dados'.")
+
+
+
+# --- Design polinomial Φ = [1, x, x^2, ..., x^d] ---
+def poly_design(x, d):
+    x = x.reshape(-1, 1)
+    Phi = np.hstack([np.ones((x.shape[0], 1))] + [x**k for k in range(1, d+1)])
+    return Phi
+
+# --- Ajuste por MQO/Tikhonov (não regulariza o intercepto) ---
+def fit_ridge(Phi, y, lam=0.0):
+    M = Phi.shape[1]
+    D = np.eye(M); D[0, 0] = 0.0
+    return np.linalg.pinv(Phi.T @ Phi + lam * D) @ (Phi.T @ y)
